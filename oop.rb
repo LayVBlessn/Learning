@@ -1,5 +1,5 @@
 class Station
-  attr_reader :name
+  attr_reader :name, :trains
 
   def initialize(name)
     @name = name
@@ -14,51 +14,26 @@ class Station
     @trains.delete(train)
   end
 
-  def show_trains_all
-    num = ''
-    if @trains.empty?
-      puts 'Станция пуста.'
-    else
-      @trains.each{|train| num += train.number.to_s + ' '}
-    end
-    return num[0...num.length-1]
+  def trains_by_type(type_of_train)
+    train_t = []
+    @trains.each{|train| train_t << train if train.type == type_of_train}
+    train_t
   end
 
-  def show_trains_by_type
-    gruz = 0
-    pass = 0
-    if @trains.empty?
-      return 'Станция пуста'
-    else
-      @trains.each do |train|
-        if train.type == 'Грузовой'
-          gruz += 1
-        else
-          pass += 1
-        end
-      end
-    end
-    return  "Пассажирских поездов на станции #{@name}: #{pass}\nГрузовых поездов на станции #{@name}: #{gruz}"
+  def count_trains_by_type(type_of_train)
+    trains_by_type(type_of_train).length
   end
 end
 
 class Route
-  attr_reader :rout
+  attr_reader :stations
 
   def initialize(starting_st, end_st)
-    @end_st = end_st
-    @route = [starting_st, @end_st]
-  end
-
-  def show_route
-    route = ''
-    @route.each{|x| route += x.name + ', '}
-    return route[0...route.length-2]
+    @stations = [starting_st, end_st]
   end
 
   def add_inter(station)
-    @route[-1] = station
-    @route << @end_st
+    @stations.insert(-1, station)
   end
 
   def remove_inter(station)
@@ -67,7 +42,7 @@ class Route
 end
 
 class Train
-  attr_reader :number, :type, :wagons
+  attr_reader :number, :type, :wagons, :location
   attr_accessor :speed
 
   def initialize(number, type, wagons)
@@ -75,18 +50,19 @@ class Train
     @type = type
     @wagons = wagons.to_i
     @speed = 0
-    @routes = []
+    @route = nil
     @location = nil
   end
 
-  def change_wagons(what_to_do)
+  def add_wagon
     if @speed == 0
-      case what_to_do
-      when '+'
-        @wagons += 1
-      when '-'
-        @wagons -=1
-      end
+      @wagons += 1
+    end
+  end
+
+  def remove_wagon
+    if @speed == 0
+      @wagons -= 1
     end
   end
 
@@ -94,69 +70,57 @@ class Train
     @speed = 0
   end
 
-  def set_route(route)
-    @routes = route.route
-    @location = @routes[0]
+  def set_route(route_of_train)
+    @route = route_of_train
+    @location = @route.stations[0]
     @location.add_train(self)
   end
 
-  def move(where_to_go)
-    if @location == nil
-      puts 'Вначале определите маршрут!'
-    else
-      id = @routes.find_index(@location)
-      case where_to_go
-      when '+'
-        if id + 1 == @routes.length
-        else
-          @location.remove_train(self)
-          @location = @routes[id + 1]
-          @location.add_train(self)
-        end
-      when '-'
-        if id - 1 < 0
-        else
-          @location.remove_train(self)
-          @location = @routes[id-1]
-          @location.add_train(self)
-        end
+  def move_forward
+    if check_next
+      @location.remove_train(self)
+      @location = @route.stations[@route.stations.find_index(@location) + 1]
+      @location.add_train(self)
+    end
+  end
+
+  def move_back
+    if check_prev
+      @location.remove_train(self)
+      @location = @route.stations[@route.stations.find_index(@location)- 1]
+      @location.add_train(self)
+    end
+  end
+
+  def location_prev
+    if check_prev
+      return @route.stations[@route.stations.find_index(@location)- 1]
+    end
+  end
+
+  def location_next
+    if check_next
+      return @route.stations[@route.stations.find_index(@location) + 1]
+    end
+  end
+
+  private
+
+  def check_prev
+    if @location
+      id = @route.stations.find_index(@location)
+      if id - 1 >= 0
+        true
       end
     end
   end
 
-  def show_location
-    if @location == nil
-      puts 'Вначале определите маршрут!'
-    else
-      return @location.name
-    end
-  end
-
-  def show_prev_loc
-    if @location == nil
-      puts 'Вначале определите маршрут!'
-    else
-      id = @routes.find_index(@location)
-      if id - 1 < 0
-        loc = "Поезд находится на начальной станции #{@location.name}"
-      else
-        loc = @routes[id-1].name
+  def check_next
+    if @location
+      id = @route.stations.find_index(@location)
+      if id + 1 != @route.stations.length
+        true
       end
-      return loc
-    end
-  end
-
-  def show_next_loc
-    if @location == nil
-      puts 'Вначале определите маршрут!'
-    else
-      id = @routes.find_index(@location)
-      if id + 1 == @routes.length
-        loc = "Поезд находится на конечной станции #{@location.name}"
-      else
-        loc = @routes[id+1].name
-      end
-      return loc
     end
   end
 end
