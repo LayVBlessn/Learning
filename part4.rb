@@ -1,14 +1,5 @@
 module Company
-  def company(comp)
-    self.comp = comp
-  end
-
-  def show_company
-    self.comp
-  end
-
-protected
-  attr_accessor :comp
+  attr_accessor :company
 end
 
 
@@ -20,10 +11,8 @@ module InstanceCounter
 
   module ClassMethods
 
-    @inst = 0
-
     def instances
-      @inst
+      @inst ||= 0
     end
 
     def counter
