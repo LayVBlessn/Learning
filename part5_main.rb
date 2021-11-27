@@ -1,11 +1,11 @@
-require_relative 'part5_class_train'
-require_relative 'part5_validations'
+require_relative 'part5_train'
+require_relative 'part5_station'
 
 class Interface
-  include Validation
 
   def initialize
     @trains = []
+    @stations = []
   end
 
   def start
@@ -13,51 +13,56 @@ class Interface
       case choice()
       when 1
         puts '='*20
-        processor()
+        processor_1()
+
       when 2
+        puts '='*20
+        processor_2()
+
+      when 3
         puts '='*20
         puts 'До свидания!'
         puts '~'*20
         break
+
       end
     end
   end
 
 private
 
-  def processor
-    input = input()
-    validate!(input[0], input[1])
-    show_created(create_train(input[0], input[1]))
-  rescue RuntimeError => e
-    print_error(e)
-    retry if !valid?(input[0], input[1])
+  def processor_1
+    show_created_train(create_train())
   end
 
-  def print_error(e)
-    puts "Ошибка при создании объекта: #{e.message}. Попробуйте снова"
-    puts '='*20
+  def processor_2
+    show_created_station(create_station())
   end
 
-  def create_train(num, type)
-    @trains << Train.new(num, type)
+  def create_train
+    @trains << Train.new
     @trains[-1]
   end
 
-  def input
-    print 'Введите номер и тип поезда через пробел: '
-    input = gets.chomp.split
-  end
-
-
-  def show_created(train)
+  def show_created_train(train)
     puts "#{train.type_of_train} поезд с номером #{train.number} успешно создан!"
     puts '='*20
   end
 
+  def show_created_station(station)
+    puts "Станция #{station.name} успешно создана!"
+    puts '='*20
+  end
+
+  def create_station
+    @stations << Station.new
+    @stations[-1]
+  end
+
   def choice
     puts '1 - Создать поезд'
-    puts '2 - Выйти'
+    puts '2 - Создать станцию'
+    puts '3 - Выйти'
     print 'Выберите команду: '
     a = gets.chomp.split.map(&:to_i)[0]
   end
