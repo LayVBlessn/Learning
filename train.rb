@@ -1,6 +1,12 @@
+require_relative 'module_validation'
+require_relative 'module_access'
+
 class Train
+  NUMBER_FORMAT =  /^.{3}-*.{2}$/i
+  include Validation
   attr_reader :number, :type_of_train, :location, :wagons
-  attr_accessor :speed
+  attr_accessor_with_history :speed
+  validate :number, :format, NUMBER_FORMAT
 
   def initialize(number)
     @number = number
