@@ -1,9 +1,10 @@
 require_relative 'module_validation'
-require_relative 'module_access'
+require_relative 'module_accessor'
 
 class Train
   NUMBER_FORMAT =  /^.{3}-*.{2}$/i
   include Validation
+  extend Accessor
   attr_reader :number, :type_of_train, :location, :wagons
   attr_accessor_with_history :speed
   validate :number, :format, NUMBER_FORMAT
